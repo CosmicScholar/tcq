@@ -51,6 +51,8 @@
 !
 ! All rights reserved
 !
+!Revised by zhikui guo for marine gravity survey, 2016/11/03
+	
 	include "link_fnl_shared.h"
 	  USE NUMERICAL_LIBRARIES !invoke IMAL library
 	  implicit none
