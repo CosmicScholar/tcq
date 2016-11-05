@@ -240,3 +240,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/tcq/example2
+/tcq/example0
+/tcq/example

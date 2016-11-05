@@ -52,11 +52,62 @@
 ! All rights reserved
 !
 !Revised by zhikui guo for marine gravity survey, 2016/11/03
+!================================进度条===============================================================
+MODULE CMD_Progress
+Implicit None
+private
+Logical , parameter , public :: CMD_PROGRESS_ABSOLUTE = .true.
+Type , public :: CLS_CMD_Progress
+Integer , private :: N , lens , i
+Character :: M = "*" , O = "."
+Character(len=64) :: Prefix
+Contains
+Procedure :: Set
+Procedure :: Put
+End Type CLS_CMD_Progress
+
+contains
+
+Subroutine Set( this , N , L )
+Class( CLS_CMD_Progress ) :: this
+Integer , Intent( IN ) :: N , L
+this % N = N
+this % lens = L
+this % i = 0
+this % Prefix = " Progress: " !//
+End Subroutine Set
+
+Subroutine Put( this , K , bAbsol )
+Class( CLS_CMD_Progress ) :: this
+Integer , Intent( IN ) :: K
+Logical , optional :: bAbsol
+Character(len=1) :: br
+integer :: jm
+this % i = this % i + K
+if ( present( bAbsol ) ) then
+if ( bAbsol ) this % i = K
+end if
+if ( this % i > this % n ) this % i = this % n
+jm = Nint( real( this%i * this%lens ) / real( this%N ) )
+if ( this%i < this%n ) then
+br = char(13)
+else
+br = char(10)
+end if
+!write( * , '(5a,f6.2,2a)',advance="no") trim(this%Prefix) , '[' , &
+write( * , '(5a,f6.2,2a\)') trim(this%Prefix) , '[' , & !// 如您的编译器不支持，请用上方语句代替
+repeat(this%M , jm ) , repeat( this%O , this%lens-jm ) , '] ' , this%i*100.0/this%N , "%" , br
+End Subroutine Put
+
+END MODULE CMD_Progress
 	
 	include "link_fnl_shared.h"
 	  USE NUMERICAL_LIBRARIES !invoke IMAL library
+	  !=====使用进度条模块=====
+		USE CMD_Progress
+		
 	  implicit none
-	  integer*4 i,j,nx,ny,npt,left,right,up,down,rx,ry,&
+	  integer*4 i,j,nx,ny,npt,npt_all,left,right,up,down,rx,ry,&
 			   ii,jj,m,n,ldata,nxi,nyi,nxo,nyo,tc_type,&
 				ileft,iright,jup,jdown,kx,ky,k	
 
@@ -69,16 +120,18 @@
 	   
 	  real*8,allocatable,dimension(:,:)::data 
 	  real*8,allocatable,dimension(:)::xa,ya
+      !real*8,allocatable,dimension(:)::xa_debug,ya_debug !using to debug output
  
 	  real*4,allocatable,dimension(:,:)::ain,ao,a
 	  logical check     
+      integer,external :: GetLineNum
 ! Variables for input arguments. These variables should not be used in
 ! the main program. 
 	  integer  par,nargs,iargc 
 	  character*80 ifile1,ifile2,ifile3,ofile1,cha,tbuf
 	  logical io(10),ltc
 	  data par/6/
-
+	type( CLS_CMD_Progress ) ::Progress !DYI progressbar
 	  
 ! get command-line arguments 
 	  nargs=iargc()
@@ -127,6 +180,12 @@
 		ofile1=cha(3:)
 				i=i+1
 		io(i)=.false.
+		
+		!elseif(cha(2:2).eq.'N' .or. cha(2:2).eq.'n') then
+		!tbuf=cha(3:)
+		!read(tbuf,*)npt_all
+		!		i=i+1
+		!io(i)=.false.
 ! Optional parameters
 		elseif(cha(2:2).eq.'T' .or. cha(2:2).eq.'t') then
 		tbuf=cha(3:)
@@ -146,10 +205,13 @@
 	  if(io(i)) then
 	  call write_error
 	  end if
-	  end do
+	end do
 	  
 ! open computed point file
 	open(10,file=ifile1)
+    !get numbers of data
+    !write(*,*)'总数据个数:', GetLineNum(ifile1)
+    npt_all=GetLineNum(ifile1)
 ! open inner zone DTM
 	open(11,file=ifile2,form='unformatted')
 ! open outer zoner DTM
@@ -168,16 +230,27 @@
 	read(12)((ao(i,j),j=1,nyo),i=1,nxo)
 
 	pi=4.d0*datan(1.d0)
-	dtor=datan(1.d0)/45.d0
-	density=2.67d3 !kg/m**3
-	G=6.67d-11 !m**3/(kg*sec**2)
+	dtor=datan(1.d0)/45.d0 ! radian per degree
+	density=2.67d3 ! Crust density: kg/m**3
+	G=6.67d-11 !Gravitational constant: m**3/(kg*sec**2)
 	
 
 	radius1=inner_radius/(2*pi*6371/360.d0) ! radius1 in degree
 	radius2=outer_radius/(2*pi*6371/360.d0) ! radius2 in degree
- ! read computed points file     
- 1    read(10,*,end=2)lon,lat,ht
-	  npt=npt+1
+ ! read computed points file    
+!====================调用进度条========================================
+call Progress % Set( npt_all ,25 )!// 1700次，显示长度25
+Progress % Prefix = "Calculating: " !// 前方提示文字，不是必须
+Progress % M = "#" !// 已完成部分的字符，不是必须
+Progress % O = "." !// 未完成部分的字符，不是必须
+
+	write(*,*)'Number of calculate points: ', npt_all
+	npt=0
+!/////////////////////////////////////////////////////////////////////////////////////
+1   read(10,*,end=2)lon,lat,ht
+	  if(npt.ge.npt_all)goto 2
+	  !=========下面这条放在循环里------
+	call Progress % Put(npt , CMD_PROGRESS_ABSOLUTE ) !// 调用进度条绝对方式
  ! Calculate the innermost zone effect
 	   
 	i=(lon-xi1)/dxi+1.01
@@ -193,25 +266,31 @@
 	  kx= iright-ileft+1
 	  ky=jup-jdown+1
 	  allocate(xa(kx),ya(ky),data(kx,ky))
+      !allocate(xa_debug(kx),ya_debug(ky))
 	  k=0
 	  factor=dcos(lat*dtor)*6371000.d0
 	  do ii=ileft, iright
 	  k=k+1
 	  tmp=xi1+(ii-1)*dxi
 	  xa(k)=(tmp-lon)*dtor*factor
+      !xa_debug(k)=(tmp)
 	  end do
 	  k=0
 	  do jj=jdown, jup
 	  k=k+1
 	  tmp=yi1+(jj-1)*dyi
 	  ya(k)=(tmp-lat)*dtor*6371000.d0
+      !ya_debug(k)=(tmp)
 	  end do
-
+!open(110,file='debuginfo_innermost.txt')
 	  do ii=ileft, iright
 	  do jj=jdown, jup
 	  data(ii-ileft+1, jj-jdown+1)=ain(ii,jj)
+	  !write(110,'(2f12.6,5f10.3)')xa_debug(ii-ileft+1),ya_debug(jj-jdown+1),ain(ii,jj)
+      !write(*,*) ii,jj
 	  end do
-	  end do
+    end do
+    
 	  check=.true.
 	  ldata=max(kx,ky) 
 !C Calculate gradient along y and x using quadratic polynomials.
@@ -221,7 +300,6 @@
 	  s0=dsqrt(dxi*dtor*factor*dyi*dtor*6371000.d0/pi)
 	  partA=2*pi*density*G*s0*1.d5
 	  aa= dsqrt(hx**2+hy**2)
-
 	  rk=aa/dsqrt(1.d0+aa*aa)
 	  kc=dsqrt(1.d0-rk*rk)
 	
@@ -243,10 +321,11 @@
 	allocate(a(nx,ny))
 	lon_min=xi1+dfloat(left-1)*dxi
 	lat_min=yi1+dfloat(down-1)*dyi
-!
+!open(111,file='debuginfo_inner.txt')
 	do m=down,up
 	do n=left,right
 	a(n-left+1,m-down+1)=ain(n,m)
+    !write(111,'(2f12.6,5f10.3)')lon_min+(n-left)*dxi,lat_min+(m-down)*dyi,ain(n,m)
 	  end do
 	end do
 	  west=lon_min
@@ -273,10 +352,11 @@
  
 	lon_min=xo1+(left-1.d0)*dxo
 	lat_min=yo1+(down-1.d0)*dyo
-!
+!open(112,file='debuginfo_outer.txt')
 	do m=down,up
 	  do n=left,right
 		a(n-left+1,m-down+1)=ao(n,m)
+        !write(112,'(2f12.6,5f10.3)')lon_min+(n-left)*dxo,lat_min+(m-down)*dyo,ao(n,m)
 	  end do
 	end do
 	call tcout(a,nx,ny,lon_min,lat_min,dxo,dyo,ltc,&
@@ -287,16 +367,33 @@
 !  output format
 	write(60,'(2f12.6,5f10.3)')lon,lat,ht,tc0,tc1,tc2,tc
 	end if
+	npt=npt+1
 	go to 1
 2     write(0,*)'Number of points:', npt
 	deallocate(ain,ao)
 !c     output the time of the program  executeing    
 	call second(time)
 	write(*,'(a6,f10.3,a4)')'Time:',time,'sec'
-	write(60,'(a6,f10.3,a4)')'Time:',time,'sec'
+	!write(60,'(a6,f10.3,a4)')'Time:',time,'sec'
 	stop
-	end
+    end
 
+    !get linenumbers of file
+    FUNCTION GetLineNum(filename)
+    implicit none
+    integer GetLineNum
+    character*80 filename
+    integer::val=0
+    real line
+    GetLineNum=0
+    OPEN(UNIT=77,FILE=filename,STATUS='OLD')
+    do while(val==0)
+      read(77,*,iostat=val) line
+      GetLineNum=GetLineNum+1
+    end do
+    end
+    
+	!calculate K(), which is the complete elliptic integral of the first kind defined in Eq.(5)
 	FUNCTION CEL(QQC,PP,AA,BB)
 	implicit real*8(a-h,o-z)
 	  PARAMETER (CA=.0003d0, PIO2=1.5707963268d0)

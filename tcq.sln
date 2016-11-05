@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "tcq", "tcq\tcq.vfproj", "{4828EE20-239D-4DB3-8240-8D1DBEC45112}"
 EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "z2grd3", "z2grd3\z2grd3.vfproj", "{8CEA1B0C-7B01-4DCC-837B-48EFFD669A31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,12 @@ Global
 		{4828EE20-239D-4DB3-8240-8D1DBEC45112}.Release|x64.Build.0 = Release|x64
 		{4828EE20-239D-4DB3-8240-8D1DBEC45112}.Release|x86.ActiveCfg = Release|Win32
 		{4828EE20-239D-4DB3-8240-8D1DBEC45112}.Release|x86.Build.0 = Release|Win32
+		{8CEA1B0C-7B01-4DCC-837B-48EFFD669A31}.Debug|x64.ActiveCfg = Debug|Win32
+		{8CEA1B0C-7B01-4DCC-837B-48EFFD669A31}.Debug|x86.ActiveCfg = Debug|Win32
+		{8CEA1B0C-7B01-4DCC-837B-48EFFD669A31}.Debug|x86.Build.0 = Debug|Win32
+		{8CEA1B0C-7B01-4DCC-837B-48EFFD669A31}.Release|x64.ActiveCfg = Release|Win32
+		{8CEA1B0C-7B01-4DCC-837B-48EFFD669A31}.Release|x86.ActiveCfg = Release|Win32
+		{8CEA1B0C-7B01-4DCC-837B-48EFFD669A31}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
