@@ -112,7 +112,7 @@ END MODULE CMD_Progress
 				ileft,iright,jup,jdown,kx,ky,k	
 
  
-	  real*8 lon,lat,ht,d2r,west,east,south,north,tc1,tc2,tc,fact,&
+	  real*8 lon,lat,ht,d2r,west,east,south,north,tc1,tc2,tc,slab_boug,fact,&
 			 xi1,xi2,yi1,yi2,dxi,dyi,xo1,xo2,yo1,yo2,dxo,dyo,pi,time,&
 			 inner_radius,outer_radius,radius1,radius2,lat_min,lon_min
 	  real*8 rk,kc,hx,hy,aa,s0,ka,G,density,tc0,dtor,factor,tmp,cel
@@ -231,7 +231,7 @@ END MODULE CMD_Progress
 
 	pi=4.d0*datan(1.d0)
 	dtor=datan(1.d0)/45.d0 ! radian per degree
-	density=2.67d3 ! Crust density: kg/m**3
+	density=1.64d3 ! Crust density: kg/m**3
 	G=6.67d-11 !Gravitational constant: m**3/(kg*sec**2)
 	
 
@@ -298,7 +298,7 @@ Progress % O = "." !// 未完成部分的字符，不是必须
 	  hx= dqd2dr(1, 0, 0.d0, 0.d0, kx, xa, ky,ya, data, ldata, check)
 	  hy= dqd2dr(0, 1, 0.d0, 0.d0, kx, xa, ky,ya, data, ldata, check)
 	  s0=dsqrt(dxi*dtor*factor*dyi*dtor*6371000.d0/pi)
-	  partA=2*pi*density*G*s0*1.d5
+      partA=2*pi*density*G*s0*1.d5
 	  aa= dsqrt(hx**2+hy**2)
 	  rk=aa/dsqrt(1.d0+aa*aa)
 	  kc=dsqrt(1.d0-rk*rk)
@@ -363,9 +363,11 @@ Progress % O = "." !// 未完成部分的字符，不是必须
 			   west,east,south,north,lon,lat,ht,tc2)
 	deallocate(a)
 	tc=tc1+tc2+tc0     !Total terrain correction
+    slab_boug=2*pi*density*G*DABS(ht)*1.d5
+    tc=tc+slab_boug
 	if(ht/=9999.0) then
 !  output format
-	write(60,'(2f12.6,5f10.3)')lon,lat,ht,tc0,tc1,tc2,tc
+	write(60,'(2f12.6,6f10.3)')lon,lat,ht,tc0,tc1,tc2,tc,slab_boug
 	end if
 	npt=npt+1
 	go to 1
@@ -475,7 +477,7 @@ Progress % O = "." !// 未完成部分的字符，不是必须
 	  logical ltc
 	  data gconst/6.6732d-11/ ! m**3/kg/s**2
 !c Averaged density of rock
-	  data density/2.67d3/ ! kg/m**3 
+	  data density/1.64d3/ ! kg/m**3 
 	  allocate(wxp(nx),wyp(ny),xvec(nx),yvec(ny),workx(nx),&
 			   worky(ny),xnode(nx),ynode(ny)) 
 	  pi=4.d0*datan(1.d0)
@@ -586,7 +588,7 @@ Progress % O = "." !// 未完成部分的字符，不是必须
 	  logical ltc
 	  data gconst/6.6732d-11/ ! m**3/kg/s**2
 !c Averaged density of rock
-	  data density/2.67d3/ ! kg/m**3 
+	  data density/1.64d3/ ! kg/m**3 
 	  allocate(wxp(nx),wyp(ny),xvec(nx),yvec(ny),workx(nx),&
 			   worky(ny),xnode(nx),ynode(ny))
  
