@@ -170,3 +170,13 @@ gmt grdmath %faa% %outputpath%TC_R%Rdistance%.grd ADD = %outputpath%Boug_tcq_R%R
 del fort.60 gmt.history 
 pause
 ```
+
+# Figure
+Bathymetry of nner zone
+
+![Bathymetry of nner zone](https://github.com/CosmicScholar/tcq/blob/master/tcq/Example_sat/inputdata/inner.grd.png)
+
+Bathymetry of outer zone
+
+![Bathymetry of outer zone](https://github.com/CosmicScholar/tcq/blob/master/tcq/Example_sat/inputdata/outer.grd.png)
+
