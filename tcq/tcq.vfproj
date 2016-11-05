@@ -49,5 +49,5 @@
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
 		<File RelativePath=".\tcq.f90"/></Filter>
-		<File RelativePath=".\ReadMe.txt"/></Files>
+		<File RelativePath=".\ReadMe.md"/></Files>
 	<Globals/></VisualStudioProject>
