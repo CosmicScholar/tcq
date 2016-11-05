@@ -1,0 +1,12 @@
+outer.grd: Title: 
+outer.grd: Command: grdsample G:\Data\1-GlobalGeophysicalData\ETOPO1\ETOPO1_Bed_g_gdal.grd\ETOPO1_Bed_g_gdal.nc -R45/55/-42/-32 -nb -I0.016666666666667 -Gouter.grd
+outer.grd: Remark: 
+outer.grd: Gridline node registration used [Geographic grid]
+outer.grd: Grid file format: nf = GMT netCDF format (32-bit float), COARDS, CF-1.5
+outer.grd: x_min: 45 x_max: 55 x_inc: 0.0166666666667 name: longitude [degrees_east] n_columns: 601
+outer.grd: y_min: -42 y_max: -32 y_inc: 0.0166666666667 name: latitude [degrees_north] n_rows: 601
+outer.grd: z_min: -6137.19433594 z_max: -148.416671753 name: z
+outer.grd: scale_factor: 1 add_offset: 0
+outer.grd: median: -3552.25 scale: 764.568422461
+outer.grd: mean: -3466.60106708 stdev: 778.51807558 rms: 3552.94408545
+outer.grd: format: netCDF-4 chunk_size: 151,151 shuffle: on deflation_level: 3

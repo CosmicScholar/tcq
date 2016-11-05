@@ -218,6 +218,8 @@ END MODULE CMD_Progress
 	open(12,file=ifile3,form='unformatted')
 ! open output file
 	open(60,file=ofile1)
+    !write(60,'(a12,a12,a10,a10,a10,a10,a10,a10)')'lon','lat','h','inmost','inner','outer','TC','slab'
+    !write(60,'(2f12.6,6f10.3)')lon,lat,ht,tc0,tc1,tc2,tc,slab_boug
 ! read DTM for inner zone       
 	read(11)nxi,nyi,xi1,xi2,yi1,yi2,dxi,dyi
 	allocate(ain(nxi,nyi))
